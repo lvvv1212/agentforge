@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: agentforge
+
+  ai:
+    # ===== DeepSeek 对话模型（走 OpenAI 兼容协议）=====
+    openai:
+      base-url: https://api.deepseek.com/v1
+      # 推荐用环境变量注入，避免密钥硬编码：export DEEPSEEK_API_KEY=sk-xxx
+      api-key: ${DEEPSEEK_API_KEY:sk-placeholder}
+      chat:
+        options:
+          model: deepseek-chat
+          temperature: 0.7
+
+    # ===== 本地向量化（ONNX，零外部服务）=====
+    # 默认启用 transformers 向量化（DeepSeek 没有 embedding 接口，故本地化）
+    model:
+      embedding: transformers
+    embedding:
+      transformer:
+        # 模型与分词器首次运行会从远程下载并缓存到本地（约 80MB）
+        cache:
+          directory: ${java.io.tmpdir}/spring-ai-onnx-model
+        # 国内网络若下载慢，可改用 HuggingFace 国内镜像（取消注释并调整）：
+        # onnx:
+        #   model-uri: https://hugging-face.cn/sentence-transformers/all-MiniLM-L6-v2/resolve/main/onnx/model.onnx
+        # tokenizer:
+        #   uri: https://hugging-face.cn/sentence-transformers/all-MiniLM-L6-v2/resolve/main/onnx/tokenizer.json
+
+logging:
+  level:
+    org.springframework.ai.chat.client.advisor: DEBUG
