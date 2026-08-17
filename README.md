@@ -1,4 +1,4 @@
-# agentforge · 知识库问答 + 知识库优化 Agent
+# agentforge · 知识库问答
 
 > 面向 **AI Agent 开发岗** 的实战项目：基于 **Spring AI + spring-ai-alibaba** 落地一条完整的
 > RAG 流水线与一个 **Tool Calling** 多轮 Agent，可直接写进知识库作为「AI Agent 工程落地」证据。
@@ -20,7 +20,7 @@
 文本 ──▶ 切片 ──▶ ONNX Embedding ──▶ SimpleVectorStore（内存）
                                       │
 用户提问 ──▶ MessageChatMemoryAdvisor（多轮记忆）
-            + QuestionAnswerAdvisor（向量检索）
+            + 手动向量检索（similaritySearch, Top-4）
             + DeepSeek ChatModel ──▶ 检索增强回答（RAG）
 
 知识库优化任务 ──▶ ChatClient（系统提示：AI Agent 招聘顾问）
