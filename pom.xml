@@ -15,7 +15,7 @@
     <artifactId>agentforge</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>agentforge</name>
-    <description>基于 spring-ai-alibaba 的知识库问答与知识库优化 Agent（AI Agent 开发岗项目）</description>
+    <description>基于 Spring AI + DeepSeek 的 RAG 知识库问答与 Tool-Calling Agent</description>
 
     <properties>
         <java.version>17</java.version>
