@@ -5,7 +5,6 @@ import com.example.aidemo.model.ChatRequest;
 import com.example.aidemo.model.IngestRequest;
 import com.example.aidemo.service.AgentService;
 import com.example.aidemo.service.RagService;
-import com.example.aidemo.tools.KnowledgeTools;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -17,12 +16,10 @@ public class AiController {
 
     private final RagService ragService;
     private final AgentService agentService;
-    private final KnowledgeTools knowledgeTools;
 
-    public AiController(RagService ragService, AgentService agentService, KnowledgeTools knowledgeTools) {
+    public AiController(RagService ragService, AgentService agentService) {
         this.ragService = ragService;
         this.agentService = agentService;
-        this.knowledgeTools = knowledgeTools;
     }
 
     /** 健康检查 */
@@ -50,19 +47,11 @@ public class AiController {
         return m;
     }
 
-    /** 知识库优化 Agent（Tool Calling 编排） */
+    /** 知识库问答 Agent（Tool Calling 编排） */
     @PostMapping("/agent")
     public Map<String, String> agent(@RequestBody AgentRequest req) {
         Map<String, String> m = new LinkedHashMap<>();
         m.put("result", agentService.run(req.task(), req.conversationId()));
-        return m;
-    }
-
-    /** 读取最近一次 Agent 保存的优化知识库 */
-    @GetMapping("/doc/latest")
-    public Map<String, String> latestDoc() {
-        Map<String, String> m = new LinkedHashMap<>();
-        m.put("doc", knowledgeTools.getLatestDoc());
         return m;
     }
 }

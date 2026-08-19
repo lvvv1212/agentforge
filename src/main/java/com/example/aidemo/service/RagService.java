@@ -10,6 +10,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -22,6 +23,7 @@ public class RagService {
     private final VectorStore vectorStore;
     private final ChatClient chatClient;
     private final ChatMemory chatMemory;
+    private final AtomicInteger docCount = new AtomicInteger(0);
 
     public RagService(VectorStore vectorStore, ChatClient.Builder builder, ChatMemory chatMemory) {
         this.vectorStore = vectorStore;
@@ -38,6 +40,7 @@ public class RagService {
                 .map(text -> Document.builder().text(text).build())
                 .collect(Collectors.toList());
         vectorStore.add(docs);
+        docCount.addAndGet(docs.size());
         return "已入库 " + docs.size() + " 个文本块（约 500 字/块）。";
     }
 
@@ -69,6 +72,29 @@ public class RagService {
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, convId))
                 .call()
                 .content();
+    }
+
+    /** 在知识库中检索，返回 topK 片段拼接文本（供 Agent 工具调用）。 */
+    public String search(String query, int topK) {
+        if (query == null || query.isBlank()) {
+            return "查询为空。";
+        }
+        List<Document> docs = vectorStore.similaritySearch(
+                SearchRequest.builder().query(query).topK(topK).build());
+        if (docs == null || docs.isEmpty()) {
+            return "知识库中未检索到相关内容。";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < docs.size(); i++) {
+            sb.append("【片段 ").append(i + 1).append("】\n")
+              .append(docs.get(i).getText()).append("\n\n");
+        }
+        return sb.toString().trim();
+    }
+
+    /** 已入库文档块数量（供 Agent 工具调用）。 */
+    public String countDocs() {
+        return "知识库当前已入库 " + docCount.get() + " 个文档块。";
     }
 
     /** 简单等长切片（~500 字/块），演示用。 */

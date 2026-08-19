@@ -1,7 +1,7 @@
-# agentforge · 知识库问答
+# agentforge · 知识库问答 Agent
 
-> 面向 **AI Agent 开发岗** 的实战项目：基于 **Spring AI + spring-ai-alibaba** 落地一条完整的
-> RAG 流水线与一个 **Tool Calling** 多轮 Agent，可直接写进知识库作为「AI Agent 工程落地」证据。
+> 面向 **AI Agent 开发** 的实战项目：基于 **Spring AI + spring-ai-alibaba** 落地一条完整的
+> RAG 流水线，并用 **Tool Calling** 编排一个可自主调用知识库工具的多轮 Agent。
 
 ## 技术栈
 
@@ -23,13 +23,13 @@
             + 手动向量检索（similaritySearch, Top-4）
             + DeepSeek ChatModel ──▶ 检索增强回答（RAG）
 
-知识库优化任务 ──▶ ChatClient（系统提示：AI Agent 招聘顾问）
-                + Tool Calling：getJobDescription / extractKeywords / saveKnowledgeDoc
-                ──▶ 自主编排的知识库优化 Agent
+Agent 任务 ──▶ ChatClient（系统提示：知识库问答助手）
+            + Tool Calling：searchKnowledgeBase / countKnowledgeBase
+            ──▶ 自主编排的知识库问答 Agent
 ```
 
 - **RAG 流水线**：文档入库 → 切片 → 本地向量化 → 内存向量库 → 检索增强生成。
-- **Tool Calling Agent**：模型自主决定调用 JD 检索、关键词提取、结果落库等工具。
+- **Tool Calling Agent**：模型自主决定调用知识库检索、文档计数等工具，体现对 Agent 范式（而非仅 Prompt）的理解。
 - **多轮对话记忆**：按 `conversationId` 隔离，支持连续追问。
 
 ## 快速开始
@@ -60,30 +60,31 @@ curl -X POST http://localhost:8080/api/doc/ingest \
   -H 'Content-Type: application/json' \
   -d '{"content":"Spring AI 提供 ChatClient 统一抽象，支持 RAG、Tool Calling 与多轮记忆。"}'
 
-# 知识库问答
+# 知识库问答（RAG + 多轮记忆）
 curl -X POST http://localhost:8080/api/chat \
   -H 'Content-Type: application/json' \
   -d '{"question":"Spring AI 支持哪些核心能力？","conversationId":"c1"}'
 
-# 知识库优化 Agent
+# 知识库问答 Agent（Tool Calling 自主编排）
 curl -X POST http://localhost:8080/api/agent \
   -H 'Content-Type: application/json' \
-  -d '{"task":"帮我针对 AI Agent 开发岗优化知识库，并提取我的关键词","conversationId":"c2"}'
-
-# 读取最近保存的优化知识库
-curl http://localhost:8080/api/doc/latest
+  -d '{"task":"帮我查一下知识库里关于 Spring AI 核心能力的内容，并总结要点","conversationId":"c2"}'
 ```
 
-## 知识库话术要点（面试可讲）
+## 自定义演示数据
 
-- 用 **Spring AI + DeepSeek** 落地 RAG：自研切片 + 本地 ONNX 向量化 + 内存向量库，
-  绕开了「DeepSeek 无 embedding 接口」的工程约束。
-- 用 **Tool Calling** 把「JD 匹配 / 关键词分析 / 结果落库」拆成可调用工具，
-  由模型自主编排，体现对 Agent 范式（而非仅 Prompt）的理解。
-- 全程 **多轮对话记忆**，按会话隔离，体现生产级工程意识。
+仓库不含任何业务数据，你可以用自己的文档做演示：把文本 POST 到 `/api/doc/ingest`
+灌入知识库，再用 `/api/chat` 或 `/api/agent` 验证检索增强问答。例如：
 
-## 后续可扩展（线2-B）
+```bash
+# 灌入一段你自己的文档内容
+curl -X POST http://localhost:8080/api/doc/ingest \
+  -H 'Content-Type: application/json' \
+  -d '{"content":"这里放你自己的文档内容……"}'
+```
+
+## 后续可扩展
 
 - 把 `SimpleVectorStore` 换成 `PgVector` / `RedisVectorStore` 做持久化。
 - 引入 spring-ai-alibaba 的 **多智能体编排**（Supervisor / Pipeline / Debate）。
-- 接入真实知识库 PDF 解析（Apache PDFBox）打通端到端知识库优化。
+- 为 Agent 增加更多领域中立工具（如文档摘要、实体抽取）。
