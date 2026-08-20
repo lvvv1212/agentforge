@@ -1,0 +1,35 @@
+services:
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: agentforge-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    container_name: agentforge-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=redis
+      - REDIS_HOST=redis
+      # ONNX 向量化模型缓存到卷，避免每次重启重新下载
+      - SPRING_AI_EMBEDDING_TRANSFORMER_CACHE_DIRECTORY=/app/onnx-cache
+      # DeepSeek Key 从宿主机环境变量注入，不硬编码
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+    volumes:
+      - onnx-cache:/app/onnx-cache
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis-data:
+  onnx-cache:

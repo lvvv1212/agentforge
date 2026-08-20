@@ -31,6 +31,19 @@ spring:
         # tokenizer:
         #   uri: https://hugging-face.cn/sentence-transformers/all-MiniLM-L6-v2/resolve/main/onnx/tokenizer.json
 
+    # ===== 持久化向量库（仅 redis profile 生效）=====
+    # Redis 需带向量检索能力：redis-stack-server 或 Redis 8+（普通 redis 无 FT.CREATE 会启动失败）
+    vectorstore:
+      redis:
+        index-name: agentforge-index
+        prefix: agentforge:
+
+  # ===== Redis 连接（仅 redis profile 使用；默认 localhost，容器内由 compose 注入 REDIS_HOST）=====
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+
 logging:
   level:
     org.springframework.ai.chat.client.advisor: DEBUG

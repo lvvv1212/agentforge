@@ -7,16 +7,20 @@ import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class AiConfig {
 
     /**
      * 内存向量库：SimpleVectorStore，进程内检索，零外部依赖。
-     * 注入的是本地 ONNX 向量化模型（spring-ai-transformers 提供）。
+     * 默认 profile 生效，适合本地快速开发（无需 Redis）。
+     * 生产/演示持久化请改用 redis profile（配合 docker-compose 中的 redis-stack），
+     * 由 Spring AI 自动装配 RedisVectorStore，重启不丢数据。
      */
     @Bean
-    public VectorStore vectorStore(EmbeddingModel embeddingModel) {
+    @Profile("!redis")
+    public VectorStore inMemoryVectorStore(EmbeddingModel embeddingModel) {
         return SimpleVectorStore.builder(embeddingModel).build();
     }
 
